@@ -379,6 +379,147 @@ Error:
 None
 ```
 
+### RibApi v.1.2.0 update for SR-OS class based forwarding support
+
+SR-OS 26.3.R1 introduces support for a new class-based forwarding (CBF) solution based on SRv6 flexalgo. The solution is avaialble for both IPv4 and IPv6 traffic arriving inside a VPRN when the packets are matchef by BGP IPVPN routes resolved by CBF tunnel sets programmed by IS-IS. The CBF tunnel selection is based on its source and destination class identifier which can be accomplished by installing RIB-API route entry inside the VPRN. The matched IP packets will be then redirected into a flexalgo tunnel that provide a better user experience. (e.g. algo with min. end to end latancy, or algo with specific links avoidance)
+
+  - Once configured, for packets arriving on a CBF-enabled VPRN interface:
+  - The router looks up the source and destination IP to derive source-class and destination-class.
+  - It matches the pair against the mapping table to select a flex-algo tunnel member.
+  - If no match is found, or if either class is zero (not found), the default algorithm 0 tunnel is used
+
+<img width="2064" height="582" alt="image" src="https://github.com/user-attachments/assets/ef356f0b-989f-4b3e-96ed-ac5784363c05" />
+
+Nokia SR-OS v1.2.0 RIB-API definition from nokia-rib-api.proto file
+
+////////////////////////// Route Table //////////////////////////
+message RouteTableEntryKey {
+  optional string prefix = 1;                // Key; IP prefix and prefix length in CIDR
+                                             // format
+  optional uint32 preference = 2;            // Key; this is ordering preference for
+                                             // multiple routes with same prefix for
+                                             // ordering within the RIB-API module
+  optional string service_name = 3;          // if specified, then must match configured VPRN
+                                             // if not specified, operation applies to Base router
+}
+message RouteTableEntry {
+  optional RouteTableEntryKey entry_key = 1; // Route entry key
+  optional uint32 rtm_preference = 2;        // This is preference to use when installing
+                                             // in RTM; valid values are 0 - 255 (byte)
+  optional uint32 metric = 3;                // Configured tunnel metric to use
+  oneof next_hop {
+    string tunnel_next_hop = 4;              // Tunnel destination IP address
+    bool follow_resolution = 5;              // Forward matching traffic according to
+                                             // the next-most-specific route in the FIB
+  }
+  optional uint32 source_class = 6;          // Class tagged to packets whose source IP
+                                             // address matches the route
+  optional uint32 destination_class = 7;     // Class tagged to packets whose destination
+                                             // IP address matches the route
+}
+
+# RIB-API  (add source and destinatin prefix class and set follow_resolution flag - activate cbf)
+rib_modify route add ipv4 --key_prefix 106.0.1.10/32 --service_name 11 --destination_class 1 --follow_resolution --id 1
+rib_modify execute
+rib_modify
+
+rib_modify route add ipv4 --key_prefix 105.0.1.10/32 --service_name 11 --source_class 1  --follow_resolution --id 2
+rib_modify execute
+rib_modify
+
+PROCESSED REQUESTS:
+
+======= id: 1 =======
+==request 1:
+id: 1
+ipv4_route_ADD {
+  entry_key {
+    prefix: "106.0.1.10/32"
+    service_name: "11"
+  }
+  follow_resolution: true
+  destination_class: 1
+}
+
+==response 1:
+id: 1
+status: OK
+
+======= id: 2 =======
+==request 2:
+id: 2
+ipv4_route_ADD {
+  entry_key {
+    prefix: "105.0.1.10/32"
+    service_name: "11"
+  }
+  follow_resolution: true
+  source_class: 1
+}
+
+==response 2:
+id: 2
+status: OK
+
+
+Error:
+None
+(grpc-shell) >
+
+SR-OS CLI output
+
+A:admin@core6# show router 11 rib-api route detail 
+
+===============================================================================
+RibApi Route Table (Service: 11)  Family: IPv4
+===============================================================================
+Prefix           : 105.0.1.10/32
+Client IP        : 3fff:172:20:20::1
+Client Tag       : 15                              Stale client      : N
+Metric           : 0                               RTM Preference    : 0
+Rib-Api Pref     : 0
+Last Updated     : 05/05/2026 23:01:17             
+ 
+Follow           : Y
+Src Class        : 1                               Dst Class         : 0
+Active In RTM    : Y
+Inactive Reason  : Not Applicable
+-------------------------------------------------------------------------------
+Prefix           : 106.0.1.10/32
+Client IP        : 3fff:172:20:20::1
+Client Tag       : 15                              Stale client      : N
+Metric           : 0                               RTM Preference    : 0
+Rib-Api Pref     : 0
+Last Updated     : 05/05/2026 23:01:17             
+ 
+Follow           : Y
+Src Class        : 0                               Dst Class         : 1
+Active In RTM    : Y
+Inactive Reason  : Not Applicable
+-------------------------------------------------------------------------------
+No. of Rib-Api Routes: 2
+===============================================================================
+
+A:admin@core6# show router 11 rib-api route 
+
+==============================================================================
+RibApi Route Table (Service: 11)  Family: IPv4
+==============================================================================
+Prefix                                        Rib-Api   Client IP        Act
+   Next Hop                                   Pref                       
+------------------------------------------------------------------------------
+105.0.1.10/32                                 0         3fff:172:20:20:* Y
+   N/A                                        
+106.0.1.10/32                                 0         3fff:172:20:20:* Y
+   N/A                                        
+------------------------------------------------------------------------------
+No. of Rib-Api Routes: 2
+==============================================================================
+* indicates that the corresponding row element may have been truncated.
+<img width="330" height="140" alt="image" src="https://github.com/user-attachments/assets/dda40734-a09d-443c-a4fd-2b0bee047bb7" />
+
+
+
 ## CertificateManagement service
 
 :heavy_exclamation_mark: :skull: None of the certificates, certificate authorities and generally antyhing that is provided by this tool or described in this document shouldnt be used in production enviroment and shouldnt be considered as safe. Certificate provisioning should always happen in already secured network, ideally on secured connection. :skull: :heavy_exclamation_mark:
