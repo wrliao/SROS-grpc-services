@@ -392,6 +392,7 @@ SR-OS 26.3.R1 introduces support for a new class-based forwarding (CBF) solution
 
 Nokia SR-OS v1.2.0 RIB-API definition from nokia-rib-api.proto file
 
+```
 ////////////////////////// Route Table //////////////////////////
 message RouteTableEntryKey {
   optional string prefix = 1;                // Key; IP prefix and prefix length in CIDR
@@ -417,8 +418,12 @@ message RouteTableEntry {
   optional uint32 destination_class = 7;     // Class tagged to packets whose destination
                                              // IP address matches the route
 }
+```
+
 
 # RIB-API  (add source and destinatin prefix class and set follow_resolution flag - activate cbf)
+
+```
 rib_modify route add ipv4 --key_prefix 106.0.1.10/32 --service_name 11 --destination_class 1 --follow_resolution --id 1
 rib_modify execute
 rib_modify
@@ -426,7 +431,8 @@ rib_modify
 rib_modify route add ipv4 --key_prefix 105.0.1.10/32 --service_name 11 --source_class 1  --follow_resolution --id 2
 rib_modify execute
 rib_modify
-
+```
+```
 PROCESSED REQUESTS:
 
 ======= id: 1 =======
@@ -465,9 +471,11 @@ status: OK
 Error:
 None
 (grpc-shell) >
+```
 
 SR-OS CLI output
 
+```
 A:admin@core6# show router 11 rib-api route detail 
 
 ===============================================================================
@@ -499,7 +507,9 @@ Inactive Reason  : Not Applicable
 -------------------------------------------------------------------------------
 No. of Rib-Api Routes: 2
 ===============================================================================
+```
 
+```
 A:admin@core6# show router 11 rib-api route 
 
 ==============================================================================
@@ -516,8 +526,7 @@ Prefix                                        Rib-Api   Client IP        Act
 No. of Rib-Api Routes: 2
 ==============================================================================
 * indicates that the corresponding row element may have been truncated.
-<img width="330" height="140" alt="image" src="https://github.com/user-attachments/assets/dda40734-a09d-443c-a4fd-2b0bee047bb7" />
-
+```
 
 
 ## CertificateManagement service
