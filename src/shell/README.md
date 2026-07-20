@@ -421,7 +421,12 @@ message RouteTableEntry {
 ```
 
 
-# RIB-API  (add source and destinatin prefix class and set follow_resolution flag - activate cbf)
+# RIB-API v1.2.0 update
+
+  - add destination prefix and class
+  - add source prefix and class
+  - specific routing instance
+  - activate class based forwarding
 
 ```
 rib_modify route add ipv4 --key_prefix 106.0.1.10/32 --service_name 11 --destination_class 1 --follow_resolution --id 1
