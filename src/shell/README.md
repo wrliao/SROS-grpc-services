@@ -26,6 +26,7 @@ transported in plain-text, including username and password.
     + [Configuration mode limitations](#configuration-mode-limitations-1)
     + [RibApi Modify RPC](#ribapi-modify-rpc)
       - [Examples](#examples-3)
+      - SR-OS Class Based Forwarding support
   * [CertificateManagement service](#certificatemanagement-service)
       - [Examples](#examples-4)
         * [Install RPC with CSR from target](#install-rpc-with-csr-from-target)
