@@ -401,7 +401,7 @@ message RouteTableEntryKey {
   optional uint32 preference = 2;            // Key; this is ordering preference for
                                              // multiple routes with same prefix for
                                              // ordering within the RIB-API module
-  optional string service_name = 3;          // if specified, then must match configured VPRN
+  optional string service_name = 3;          // (NEW)if specified, then must match configured VPRN
                                              // if not specified, operation applies to Base router
 }
 message RouteTableEntry {
@@ -411,12 +411,12 @@ message RouteTableEntry {
   optional uint32 metric = 3;                // Configured tunnel metric to use
   oneof next_hop {
     string tunnel_next_hop = 4;              // Tunnel destination IP address
-    bool follow_resolution = 5;              // Forward matching traffic according to
+    bool follow_resolution = 5;              // (NEW)Forward matching traffic according to
                                              // the next-most-specific route in the FIB
   }
-  optional uint32 source_class = 6;          // Class tagged to packets whose source IP
+  optional uint32 source_class = 6;          // (NEW)Class tagged to packets whose source IP
                                              // address matches the route
-  optional uint32 destination_class = 7;     // Class tagged to packets whose destination
+  optional uint32 destination_class = 7;     // (NEW)Class tagged to packets whose destination
                                              // IP address matches the route
 }
 ```
@@ -533,7 +533,49 @@ No. of Rib-Api Routes: 2
 ==============================================================================
 * indicates that the corresponding row element may have been truncated.
 ```
+show route table on programmed routes from RIB-API with follow resolution flag
+```
+A:admin@core6# show router 11 route-table 
 
+===============================================================================
+Route Table (Service: 11)
+===============================================================================
+Dest Prefix[Flags]                            Type    Proto     Age        Pref
+      Next Hop[Interface Name]                                    Metric   
+-------------------------------------------------------------------------------
+1.0.6.0/24                                    Local   Local     00h13m18s  0
+       loopback1                                                    0
+5.11.2.0/24                                   Local   Local     00h13m00s  0
+       to_ce5                                                       0
+105.0.1.0/24                                  Remote  BGP       00h12m17s  170
+       5.11.2.1                                                     0
+105.0.1.10/32                                 Other   RIB-API   00h00m28s  0
+       Follow Resn                                                  0
+105.1.1.0/24                                  Remote  BGP       00h12m17s  170
+       5.11.2.1                                                     0
+105.2.1.0/24                                  Remote  BGP       00h12m17s  170
+       5.11.2.1                                                     0
+105.11.1.0/24                                 Remote  BGP       00h12m17s  170
+       5.11.2.1                                                     0
+106.0.1.0/24                                  Remote  BGP VPN   00h12m18s  170
+       5f00:1000:2:e015:: (tunneled:SRV6)                           10
+106.0.1.10/32                                 Other   RIB-API   00h00m28s  0
+       Follow Resn                                                  0
+106.1.1.0/24                                  Remote  BGP VPN   00h12m15s  170
+       5f00:1100:1:e013:: (tunneled:SRV6)                           40
+106.1.1.0/24                                  Remote  BGP VPN   00h12m15s  170
+       5f00:1100:2:e013:: (tunneled:SRV6)                           40
+106.2.1.0/24                                  Remote  BGP VPN   00h12m18s  170
+       5f00:1200:2:e013:: (tunneled:SRV6)                           10
+106.11.1.0/24                                 Remote  BGP VPN   00h12m15s  170
+       5f00:1000:1:e015:: (tunneled:SRV6)                           20
+-------------------------------------------------------------------------------
+No. of Routes: 13
+Flags: n = Number of times nexthop is repeated
+       B = BGP backup route available
+       L = LFA nexthop available
+       S = Sticky ECMP requested
+===============================================================================
 
 ## CertificateManagement service
 
