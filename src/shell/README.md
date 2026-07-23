@@ -480,7 +480,6 @@ None
 ```
 
 SR-OS CLI output
-
 ```
 A:admin@core6# show router 11 rib-api route detail 
 
@@ -533,6 +532,7 @@ No. of Rib-Api Routes: 2
 ==============================================================================
 * indicates that the corresponding row element may have been truncated.
 ```
+
 show route table on programmed routes from RIB-API with follow resolution flag
 ```
 A:admin@core6# show router 11 route-table 
@@ -576,6 +576,7 @@ Flags: n = Number of times nexthop is repeated
        L = LFA nexthop available
        S = Sticky ECMP requested
 ===============================================================================
+```
 
 ## CertificateManagement service
 
